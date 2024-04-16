@@ -53,6 +53,11 @@ class CheckLicenseTask extends DefaultTask {
         return new File("${config.absoluteOutputDir}/${PROJECT_JSON_FOR_LICENSE_CHECKING_FILE}")
     }
 
+    @Input
+    boolean isRequireAllLicensesAllowed() {
+        return config.requireAllLicensesAllowed
+    }
+
     @OutputFile
     File getNotPassedDependenciesFile() {
         new File("${config.absoluteOutputDir}/$NOT_PASSED_DEPENDENCIES_FILE")
@@ -64,6 +69,10 @@ class CheckLicenseTask extends DefaultTask {
         LicenseChecker licenseChecker = new LicenseChecker()
         LOGGER.info("Check licenses if they are allowed to use.")
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            getAllowedLicenseFile(), getProjectDependenciesData(), notPassedDependenciesFile)
+                getAllowedLicenseFile(),
+                getProjectDependenciesData(),
+                isRequireAllLicensesAllowed(),
+                notPassedDependenciesFile
+        )
     }
 }

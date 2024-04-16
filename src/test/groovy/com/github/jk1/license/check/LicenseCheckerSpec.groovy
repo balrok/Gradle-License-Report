@@ -127,7 +127,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         noExceptionThrown()
@@ -163,7 +163,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
 
@@ -200,7 +200,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         noExceptionThrown()
@@ -232,7 +232,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
@@ -309,7 +309,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         noExceptionThrown()
@@ -343,7 +343,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
@@ -381,7 +381,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         noExceptionThrown()
@@ -416,7 +416,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
@@ -455,7 +455,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         noExceptionThrown()
@@ -484,7 +484,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
 
         then:
@@ -515,7 +515,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
 
         then:
@@ -551,7 +551,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
@@ -588,7 +588,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         noExceptionThrown()
@@ -622,7 +622,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
@@ -659,7 +659,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
@@ -697,7 +697,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         noExceptionThrown()
@@ -732,7 +732,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
@@ -770,7 +770,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
@@ -804,7 +804,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
@@ -848,7 +848,7 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         noExceptionThrown()
@@ -883,12 +883,162 @@ class LicenseCheckerSpec extends Specification {
         when:
         def licenseChecker = new LicenseChecker()
         licenseChecker.checkAllDependencyLicensesAreAllowed(
-            allowedLicenseFile, projectDataFile, notPassedDependenciesFile)
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
 
         then:
         def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
         notPassedDependencies.moduleName == ["dummy-group:mod1", "dummy-group:mod1", "dummy-group:mod1"]
         notPassedDependencies.moduleLicense == ["License1", "License2", "License3"]
         thrown GradleException
+    }
+
+    def "check when ProjectData contains multiple licenses and CheckType is configured to require all licenses to match."() {
+
+        allowedLicenseFile << """
+        {
+            "allowedLicenses":[
+                {
+                    "moduleLicense": "License3",
+                    "moduleName": "dummy-group:mod1"
+                }
+            ]
+        }"""
+
+        projectDataFile << """
+        {
+            "dependencies":[
+                {
+                    "moduleLicenses": [
+                        {"moduleLicense": "License1"},
+                        {"moduleLicense": "License2"},
+                        {"moduleLicense": "License3"}
+                    ],
+                "moduleName": "dummy-group:mod1"
+                }
+            ]
+        }"""
+
+        when:
+        def licenseChecker = new LicenseChecker()
+        licenseChecker.checkAllDependencyLicensesAreAllowed(
+                allowedLicenseFile, projectDataFile, true, notPassedDependenciesFile)
+
+        then:
+        def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
+        notPassedDependencies.moduleName == ["dummy-group:mod1", "dummy-group:mod1"]
+        notPassedDependencies.moduleLicense == ["License1", "License2"]
+        thrown GradleException
+    }
+
+    def "check when ProjectData contains multiple licenses with one of them 'null' and CheckType is configured to require all licenses to match."() {
+
+        allowedLicenseFile << """
+        {
+            "allowedLicenses":[
+                {
+                    "moduleLicense": "License3",
+                    "moduleName": "dummy-group:mod1"
+                }
+            ]
+        }"""
+
+        projectDataFile << """
+        {
+            "dependencies":[
+                {
+                    "moduleLicenses": [
+                        {"moduleLicense": null},
+                        {"moduleLicense": "License2"},
+                        {"moduleLicense": "License3"}
+                    ],
+                "moduleName": "dummy-group:mod1"
+                }
+            ]
+        }"""
+
+        when:
+        def licenseChecker = new LicenseChecker()
+        licenseChecker.checkAllDependencyLicensesAreAllowed(
+                allowedLicenseFile, projectDataFile, true, notPassedDependenciesFile)
+
+        then:
+        def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
+        notPassedDependencies.moduleName == ["dummy-group:mod1"]
+        notPassedDependencies.moduleLicense == ["License2"]
+        thrown GradleException
+    }
+
+    def "check when ProjectData contains one license with 'null' and CheckType is configured to require all licenses to match."() {
+
+        allowedLicenseFile << """
+        {
+            "allowedLicenses":[
+                {
+                    "moduleLicense": "License3",
+                    "moduleName": "dummy-group:mod1"
+                }
+            ]
+        }"""
+
+        projectDataFile << """
+        {
+            "dependencies":[
+                {
+                    "moduleLicenses": [
+                        {"moduleLicense": null}
+                    ],
+                "moduleName": "dummy-group:mod1"
+                }
+            ]
+        }"""
+
+        when:
+        def licenseChecker = new LicenseChecker()
+        licenseChecker.checkAllDependencyLicensesAreAllowed(
+                allowedLicenseFile, projectDataFile, true, notPassedDependenciesFile)
+
+        then:
+        def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
+        notPassedDependencies.moduleName == ["dummy-group:mod1"]
+        notPassedDependencies.moduleLicense == [null]
+        thrown GradleException
+    }
+
+
+    def "check when ProjectData contains multiple licenses and CheckType is configured to require any licenses to match."() {
+
+        allowedLicenseFile << """
+        {
+            "allowedLicenses":[
+                {
+                    "moduleLicense": "License3",
+                    "moduleName": "dummy-group:mod1"
+                }
+            ]
+        }"""
+
+        projectDataFile << """
+        {
+            "dependencies":[
+                {
+                    "moduleLicenses": [
+                        {"moduleLicense": "License1"},
+                        {"moduleLicense": "License2"},
+                        {"moduleLicense": "License3"}
+                    ],
+                "moduleName": "dummy-group:mod1"
+                }
+            ]
+        }"""
+
+        when:
+        def licenseChecker = new LicenseChecker()
+        licenseChecker.checkAllDependencyLicensesAreAllowed(
+                allowedLicenseFile, projectDataFile, false, notPassedDependenciesFile)
+
+        then:
+        def notPassedDependencies = importNotPassedDependencies(notPassedDependenciesFile)
+        notPassedDependencies.moduleName == []
+        notPassedDependencies.moduleLicense == []
     }
 }

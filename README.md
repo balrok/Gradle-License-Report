@@ -85,6 +85,11 @@ licenseReport {
     // This is for the allowed-licenses-file in checkLicense Task
     // Accepts File, URL or String path to local or remote file
     allowedLicensesFile = new File("$projectDir/config/allowed-licenses.json")
+
+    // When false is set, a dependency is good, if any of its licenses are matched with allowedLicenses
+    // When true is set, a dependency is good, if all of its licenses are matched with allowedLicenses
+    // default is false, but true is recommended.
+    requireAllLicensesAllowed = false
 }
 ```
 

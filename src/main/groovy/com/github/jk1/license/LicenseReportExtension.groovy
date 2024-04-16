@@ -41,6 +41,7 @@ class LicenseReportExtension {
     public String[] excludeGroups
     public String[] excludes
     public Object allowedLicensesFile
+    public boolean requireAllLicensesAllowed
 
     LicenseReportExtension(Project project) {
         unionParentPomLicenses = true
@@ -55,6 +56,7 @@ class LicenseReportExtension {
         excludes = []
         importers = []
         filters = []
+        requireAllLicensesAllowed = false
     }
 
     @Nested
@@ -104,6 +106,8 @@ class LicenseReportExtension {
         snapshot += excludes
         snapshot << 'unionParentPomLicenses'
         snapshot += unionParentPomLicenses
+        snapshot << "requireAllLicensesAllowed"
+        snapshot += requireAllLicensesAllowed
         snapshot.join("!")
     }
 
