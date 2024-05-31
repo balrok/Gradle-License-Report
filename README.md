@@ -15,7 +15,7 @@ Add this to your `build.gradle` file for Gradle 7+:
 
 ```groovy
 plugins {
-    id 'com.github.jk1.dependency-license-report' version '2.5'
+    id 'com.github.jk1.dependency-license-report' version '2.8'
 }
 ```
 
@@ -47,7 +47,7 @@ licenseReport {
    
     // Set output directory for the report data.
     // Defaults to ${project.buildDir}/reports/dependency-license.
-    outputDir = "$projectDir/build/licenses"
+    outputDir = project.layout.buildDirectory.dir("licenses").get().asFile.path
 
     // Select projects to examine for dependencies.
     // Defaults to current project and all its subprojects
@@ -88,7 +88,7 @@ licenseReport {
 
     // This is for the allowed-licenses-file in checkLicense Task
     // Accepts File, URL or String path to local or remote file
-    allowedLicensesFile = new File("$projectDir/config/allowed-licenses.json")
+    allowedLicensesFile = project.layout.projectDirectory.file("config/allowed-licenses.json").asFile
 }
 ```
 
@@ -297,12 +297,27 @@ The normalizer can be enabled via a filter.
 import com.github.jk1.license.filter.*
 
 licenseReport {
+    // LicenseBundleNormalizer also accepts bundle stream as a parameter
     filters = [new LicenseBundleNormalizer(bundlePath: "$projectDir/config/license-normalizer-bundle.json")]
 }
 ```
 
-If no bundle-file is specified, a default file is used containing some commons rules. You are encouraged to create your own bundle-file
+If no bundle-file is specified, a default file is used containing some common rules. You are encouraged to create your own bundle-file
 and contribute back useful rules.
+
+### SPDX support
+
+Normalizers are also capable of mapping licenses to SPDX identifiers. The code
+
+```groovy
+import com.github.jk1.license.filter.*
+
+licenseReport {
+    filters = [new SpdxLicenseBundleNormalizer()]
+}
+```
+
+replaces string license names in the report with the corresponding [SPDX IDs](https://spdx.org/licenses/)
 
 ## Writing custom renderers, importers and filters
 

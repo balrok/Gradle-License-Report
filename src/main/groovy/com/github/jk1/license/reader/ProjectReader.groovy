@@ -28,11 +28,16 @@ import org.gradle.api.logging.Logging
 class ProjectReader {
     private Logger LOGGER = Logging.getLogger(ReportTask.class)
 
-    private LicenseReportExtension config
+    private Project[] projects
+    private Project[] buildScriptProjects
+    private String[] configurations
+
     private ConfigurationReader configurationReader
 
     ProjectReader(LicenseReportExtension config) {
-        this.config = config
+        this.projects = config.projects
+        this.buildScriptProjects = config.buildScriptProjects
+        this.configurations = config.configurations
         this.configurationReader = new ConfigurationReader(config, new CachedModuleReader(config))
     }
 
@@ -40,47 +45,44 @@ class ProjectReader {
         ProjectData data = new ProjectData()
         data.project = project
 
-        data.configurations.addAll(readProjects(false))
-        data.configurations.addAll(readProjects(true))
+        LOGGER.info("Configured projects: ${projects.join(',')}")
+
+
+        List<ConfigurationData> readProjectConfigurations = projects.collect { subProject ->
+            getConfigurationDataFromProject(GradleProject.ofProject(subProject))
+        }.flatten()
+        readProjectConfigurations = mergeConfigurationDataWithSameName(readProjectConfigurations)
+
+        List<ConfigurationData> readBuildScriptConfigurations = buildScriptProjects.collect { subProject ->
+            getConfigurationDataFromProject(GradleProject.ofProject(subProject))
+        }.flatten()
+        readBuildConfigurations = mergeConfigurationDataWithSameName(readBuildScriptConfigurations)
+
+        data.configurations.addAll(readProjectConfigurations)
+        data.configurations.addAll(readBuildConfigurations)
         return data
     }
 
-    private List<ConfigurationData> readProjects(boolean buildScripts) {
-        Project[] projectsToScan;
-        if (buildScripts) {
-            projectsToScan = config.buildScriptProjects
-            LOGGER.info("Configured buildScript projects: ${projectsToScan.join(',')}")
-        } else {
-            projectsToScan = config.projects
-            LOGGER.info("Configured projects: ${projectsToScan.join(',')}")
-        }
+    List<ConfigurationData> getConfigurationDataFromProject(GradleProject project) {
+        Set<Configuration> configurationsToScan = findConfigurationsToScan(gradleProject)
 
-        List<ConfigurationData> readConfigurations = projectsToScan.collect { subProject ->
-            GradleProject gradleProject;
+        configurationsToScan.addAll(getAllExtendedConfigurations(configurationsToScan))
 
-            if (buildScripts) {
-                gradleProject = GradleProject.ofScript(subProject)
-            } else {
-                gradleProject = GradleProject.ofProject(subProject)
-            }
-
-            Set<Configuration> configurationsToScan = findConfigurationsToScan(gradleProject)
-
-            configurationsToScan.addAll(getAllExtendedConfigurations(configurationsToScan))
-
-            LOGGER.info("Configurations(${gradleProject.name}): ${configurationsToScan.join(',')}")
-            readConfigurationData(configurationsToScan, gradleProject)
-        }.flatten()
-        mergeConfigurationDataWithSameName(readConfigurations)
+        LOGGER.info("Configurations(${gradleProject.name}): ${configurationsToScan.join(',')}")
+        return readConfigurationData(configurationsToScan, gradleProject)
     }
 
     private Set<Configuration> findConfigurationsToScan(GradleProject project) {
         Set<Configuration> toScan
-        if (config.configurations.length == 0) {
-            LOGGER.info("No configuration defined. Use all resolvable configurations.")
+        if (configurations == null) {
+            LOGGER.info("No configurations defined, falling back to the default ones")
+            configurations = project.getPlugins().hasPlugin('com.android.application') ? ['releaseRuntimeClasspath'] : ['runtimeClasspath']
+        }
+        if (configurations.length == 0) {
+            LOGGER.info("Using all resolvable configurations")
             toScan = findResolvableConfigurations(project)
         } else {
-            toScan = findConfiguredConfigurations(project, config)
+            toScan = findConfiguredConfigurations(project)
             Set<Configuration> unresolvable = findUnresolvable(toScan)
             if (unresolvable) {
                 throw new UnresolvableConfigurationException("Unable to resolve configurations: $unresolvable")
@@ -104,8 +106,8 @@ class ProjectReader {
         }
     }
 
-    static Set<Configuration> findConfiguredConfigurations(GradleProject project, LicenseReportExtension extension) {
-        project.configurations.findAll { config -> config.name in extension.configurations }
+    private Set<Configuration> findConfiguredConfigurations(GradleProject project) {
+        project.configurations.findAll { config -> config.name in configurations }
     }
 
     private static Set<Configuration> findUnresolvable(Set<Configuration> toScan) {

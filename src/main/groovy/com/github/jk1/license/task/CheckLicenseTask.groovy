@@ -23,6 +23,7 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.TaskAction
@@ -35,12 +36,14 @@ class CheckLicenseTask extends DefaultTask {
     final static String NOT_PASSED_DEPENDENCIES_FILE = "dependencies-without-allowed-license.json"
 
     private static Logger LOGGER = Logging.getLogger(CheckLicenseTask.class)
-    private LicenseReportExtension config = getProject().licenseReport
 
     CheckLicenseTask() {
         group = 'Checking'
         description = 'Check if License could be used'
     }
+
+    @Nested
+    LicenseReportExtension config
 
     @Input
     Object getAllowedLicenseFile() {
@@ -50,17 +53,17 @@ class CheckLicenseTask extends DefaultTask {
     @InputFile
     @PathSensitive(PathSensitivity.NAME_ONLY)
     File getProjectDependenciesData() {
-        return new File("${config.outputDir}/${PROJECT_JSON_FOR_LICENSE_CHECKING_FILE}")
+        return new File("${config.absoluteOutputDir}/${PROJECT_JSON_FOR_LICENSE_CHECKING_FILE}")
     }
 
     @OutputFile
     File getNotPassedDependenciesFile() {
-        new File("${config.outputDir}/$NOT_PASSED_DEPENDENCIES_FILE")
+        new File("${config.absoluteOutputDir}/$NOT_PASSED_DEPENDENCIES_FILE")
     }
 
     @TaskAction
     void checkLicense() {
-        LOGGER.info("Startup CheckLicense for ${getProject().name}")
+        LOGGER.info("Startup CheckLicense for ${config.projects.first()}")
         LicenseChecker licenseChecker = new LicenseChecker()
         LOGGER.info("Check licenses if they are allowed to use.")
         licenseChecker.checkAllDependencyLicensesAreAllowed(

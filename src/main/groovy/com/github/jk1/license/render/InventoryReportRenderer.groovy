@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- package com.github.jk1.license.render
+package com.github.jk1.license.render
 
 import com.github.jk1.license.*
 import com.github.jk1.license.util.Files
 import org.gradle.api.Project
-import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 
 class InventoryReportRenderer implements ReportRenderer {
     protected String name
@@ -27,26 +27,33 @@ class InventoryReportRenderer implements ReportRenderer {
     protected LicenseReportExtension config
     protected File output
     protected int counter
-    protected Map<String, Map<String, String>> overrides = [:]
+    protected File overridesFile
+    protected boolean isInitialized = false
+    private Map<String, Map<String, String>> _overrides = [:]
 
-    InventoryReportRenderer(String fileName = 'licenses.txt', String name = null, File overridesFilename = null) {
-            this.name = name
-            this.fileName = fileName
-            if (overridesFilename) overrides = parseOverrides(overridesFilename)
-        }
+    InventoryReportRenderer(String fileName = 'licenses.txt', String name = null, File overridesFile = null) {
+        this.name = name
+        this.fileName = fileName
+        this.overridesFile = overridesFile
+    }
 
-    @Input
+    @InputFile
     String getFileNameCache() { return this.fileName }
 
-    @Input
-    Map getOverrides() { return this.overrides }
+    @InputFile
+    File getOverridesFileCache() { return this.overridesFile }
+
+    Map<String, Map<String, String>> getOverrides() {
+        parseOverrides(overridesFile)
+        return _overrides
+    }
 
     @Override
     void render(ProjectData data) {
         project = data.project
-        if( name == null ) name = project.name
-        config = project.licenseReport
-        output = new File(config.outputDir, fileName)
+        if (name == null) name = project.name
+        config = (LicenseReportExtension) project.extensions.getByName("licenseReport")
+        output = new File(config.absoluteOutputDir, fileName)
         output.delete() // clear old output
         def inventory = buildLicenseInventory(data)
         def externalInventories = buildExternalInventories(data)
@@ -54,17 +61,23 @@ class InventoryReportRenderer implements ReportRenderer {
 
     }
 
-    protected Map<String, Map<String, String>> parseOverrides(File file) {
-        overrides = [:]
-        file.withReader { Reader reader ->
-            String line
-            while ((line = reader.readLine()) != null) {
-                String[] columns = line.split(/\|/)
-                String groupNameVersion = columns[0]
-                overrides[groupNameVersion] = [projectUrl: safeGet(columns, 1), license: safeGet(columns, 2), licenseUrl: safeGet(columns, 3)]
+    protected synchronized void parseOverrides(File file) {
+        if (isInitialized) {
+            return
+        }
+        Map<String, Map<String, String>> overrideMap = [:]
+        if (file) {
+            file.withReader { Reader reader ->
+                String line
+                while ((line = reader.readLine()) != null) {
+                    String[] columns = line.split(/\|/)
+                    String groupNameVersion = columns[0]
+                    overrideMap[groupNameVersion] = [projectUrl: safeGet(columns, 1), license: safeGet(columns, 2), licenseUrl: safeGet(columns, 3)]
+                }
             }
         }
-        return overrides
+        _overrides = overrideMap
+        isInitialized = true
     }
 
     protected Map<String, List<ModuleData>> buildLicenseInventory(ProjectData data) {
@@ -117,11 +130,8 @@ class InventoryReportRenderer implements ReportRenderer {
         }
     }
 
-    private void printDependencies(Map<String, List<ModuleData>> inventory, Map<String, Map<String, List<ImportedModuleData>>> externalInventories) {
-        output << "\n"
-        output << "Project: ${name}\n"
-        output << "Dependency License Report\n"
-        output << "Generated: ${new Date().format('yyyy-MM-dd HH:mm:ss z')}\n\n"
+    protected void printDependencies(Map<String, List<ModuleData>> inventory, Map<String, Map<String, List<ImportedModuleData>>> externalInventories) {
+        printHeader()
 
         inventory.keySet().sort().each { String license ->
             output << "\n${license}\n"
@@ -145,14 +155,16 @@ class InventoryReportRenderer implements ReportRenderer {
         output << "\n"
     }
 
-    private void printDependency(ModuleData data) {
-        boolean projectUrlDone = false
-        output << "\n\n"
-        output << "${++counter} "
-        if (data.group) output << "Group: $data.group "
-        if (data.name) output << " Name: $data.name "
-        if (data.version) output << "Version: $data.version "
+    protected void printHeader() {
         output << "\n"
+        output << "Project: ${name}\n"
+        output << "Dependency License Report\n"
+        output << "Generated: ${new Date().format('yyyy-MM-dd HH:mm:ss z')}\n\n"
+    }
+
+    protected void printDependency(ModuleData data) {
+        boolean projectUrlDone = false
+        printDependencyMetaInformation(data.group, data.name, data.version)
 
         String gnv = "${data.group}:${data.name}:${data.version}"
         if (overrides.containsKey(gnv)) {
@@ -170,46 +182,69 @@ class InventoryReportRenderer implements ReportRenderer {
 
             if (!data.manifests.isEmpty()) {
                 ManifestData manifest = data.manifests.first()
-                if (manifest.url && !projectUrlDone) {
-                    output << "  - Manifest Project URL:\n    - ${manifest.url}\n"
-                }
-                if (manifest.license) {
-                    if (manifest.license.startsWith("http")) {
-                        output << "  - Manifest license URL:\n    - ${manifest.license}\n"
-                    } else if (manifest.hasPackagedLicense) {
-                        output << "  - Packaged License File:\n    - ${manifest.license}\n"
-                    } else {
-                        output << "  - Manifest License:\n    - ${manifest.license} (Not Packaged)\n"
-                    }
-                }
+                printDependencyManifest(manifest, projectUrlDone)
             }
 
             if (!data.poms.isEmpty()) {
                 PomData pomData = data.poms.first()
-                if (pomData.projectUrl && !projectUrlDone) {
-                    output << "  - POM Project URL:\n    - ${pomData.projectUrl}\n"
-                }
-                if (pomData.licenses) {
-                    pomData.licenses.each { License license ->
-                        if (license.url) {
-                            output << "  - POM License:\n    - ${license.name}\n      - ${license.url}\n"
-                        } else {
-                            output << "  - POM License:\n    - ${license.name}\n"
-                        }
-                    }
-                }
+                printDependencyPom(pomData, projectUrlDone)
             }
         }
 
-        if (!data.licenseFiles.isEmpty() && !data.licenseFiles.first().fileDetails.isEmpty()) {
-            output << "  - Embedded license files: \n    - " + data.licenseFiles.first().fileDetails.collect {
-                it.file
-            }.unique().join(' \n    - ')
+
+        def licenseFiles = data.licenseFiles
+        if (!licenseFiles.isEmpty() && !licenseFiles.first().fileDetails.isEmpty()) {
+            printDependencyLicenseFiles(licenseFiles)
         }
         output << "\n"
     }
 
-    private printImportedDependency(ImportedModuleData data) {
+    protected void printDependencyMetaInformation(String group, String name, String version) {
+        output << "\n\n"
+        output << "${++counter} "
+        if (group) output << "Group: ${group} "
+        if (name) output << " Name: ${name} "
+        if (version) output << "Version: ${version} "
+        output << "\n"
+    }
+
+    protected void printDependencyManifest(ManifestData manifest, boolean projectUrlDone) {
+        if (manifest.url && !projectUrlDone) {
+            output << "  - Manifest Project URL:\n    - ${manifest.url}\n"
+        }
+        if (manifest.license) {
+            if (manifest.license.startsWith("http")) {
+                output << "  - Manifest license URL:\n    - ${manifest.license}\n"
+            } else if (manifest.hasPackagedLicense) {
+                output << "  - Packaged License File:\n    - ${manifest.license}\n"
+            } else {
+                output << "  - Manifest License:\n    - ${manifest.license} (Not Packaged)\n"
+            }
+        }
+    }
+
+    protected void printDependencyPom(PomData pomData, boolean projectUrlDone) {
+        if (pomData.projectUrl && !projectUrlDone) {
+            output << "  - POM Project URL:\n    - ${pomData.projectUrl}\n"
+        }
+        if (pomData.licenses) {
+            pomData.licenses.each { License license ->
+                if (license.url) {
+                    output << "  - POM License:\n    - ${license.name}\n      - ${license.url}\n"
+                } else {
+                    output << "  - POM License:\n    - ${license.name}\n"
+                }
+            }
+        }
+    }
+
+    protected printDependencyLicenseFiles(Set<LicenseFileData> licenseFiles) {
+        output << "  - Embedded license files: \n    - " + licenseFiles.first().fileDetails.collect {
+            it.file
+        }.unique().join(' \n    - ')
+    }
+
+    protected printImportedDependency(ImportedModuleData data) {
         output << "\n\n"
         output << "${++counter}. ${data.name} v${data.version}\n"
         output << "  - Project URL:\n    - ${data.projectUrl}\n"
