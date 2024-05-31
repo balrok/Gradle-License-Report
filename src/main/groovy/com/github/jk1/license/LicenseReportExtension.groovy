@@ -23,6 +23,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.initialization.dsl.ScriptHandler
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 
 class LicenseReportExtension {
@@ -45,12 +46,11 @@ class LicenseReportExtension {
 
     LicenseReportExtension(Project project) {
         unionParentPomLicenses = true
-        outputDir = "${project.buildDir}/reports/dependency-license"
+        outputDir = project.layout.buildDirectory.dir("reports/dependency-license").get().asFile.absolutePath
         projects = [project] + project.subprojects
         buildScriptProjects = []
         renderers = new SimpleHtmlReportRenderer()
-        configurations =
-            project.getPlugins().hasPlugin('com.android.application') ? ['releaseRuntimeClasspath'] : ['runtimeClasspath']
+        configurations = null
         excludeOwnGroup = true
         excludeBoms = false // false - for backwards compatibility
         excludeGroups = []
@@ -72,6 +72,15 @@ class LicenseReportExtension {
     @Nested
     DependencyFilter[] getFilters() {
         return filters
+    }
+
+    @Internal
+    String getAbsoluteOutputDir(){
+        if (new File(outputDir).isAbsolute()) {
+            return outputDir
+        } else {
+            return projects.first().layout.projectDirectory.dir(outputDir).asFile.absolutePath
+        }
     }
 
     @Input

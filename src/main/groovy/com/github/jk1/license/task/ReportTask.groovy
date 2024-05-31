@@ -19,10 +19,12 @@ import com.github.jk1.license.LicenseReportExtension
 import com.github.jk1.license.ProjectData
 import com.github.jk1.license.reader.ProjectReader
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.*
 
+@CacheableTask
 class ReportTask extends DefaultTask {
 
     private Logger LOGGER = Logging.getLogger(ReportTask.class)
@@ -38,14 +40,26 @@ class ReportTask extends DefaultTask {
 
     @OutputDirectory
     File getOutputFolder() {
-        return new File(config.outputDir)
+        return new File(config.absoluteOutputDir)
+    }
+
+    @Input
+    String[] getClasspath() {
+        def reader = new ProjectReader(config)
+        // take configurations' shallow snapshot but don't revolve them
+        def deps = getConfig().projects
+                .collectMany { reader.findConfigurationsToScan(it) }
+                .collectMany { it.allDependencies }
+                .collect { it.name + it.group + it.version}
+        deps
     }
 
     @TaskAction
     void generateReport() {
-        LOGGER.info("Processing dependencies for project ${getProject().name}")
-        new File(config.outputDir).mkdirs()
-        ProjectData data = new ProjectReader(config).read(getProject())
+        def project = config.projects.first()
+        LOGGER.info("Processing dependencies for project ${project.name}")
+        new File(config.absoluteOutputDir).mkdirs()
+        ProjectData data = new ProjectReader(config).read(project)
         LOGGER.info("Importing external dependency data. A total of ${config.importers.length} configured.")
         config.importers.each {
             data.importedModules.addAll(it.doImport())
@@ -54,10 +68,10 @@ class ReportTask extends DefaultTask {
         config.filters.each {
             data = it.filter(data)
         }
-        LOGGER.info("Building report for project ${getProject().name}")
+        LOGGER.info("Building report for project ${project.name}")
         config.renderers.each {
             it.render(data)
         }
-        LOGGER.info("Dependency license report for project ${getProject().name} created in ${config.outputDir}")
+        LOGGER.info("Dependency license report for project ${project.name} created in ${config.absoluteOutputDir}")
     }
 }

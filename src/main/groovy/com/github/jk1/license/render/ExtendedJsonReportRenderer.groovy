@@ -15,7 +15,6 @@
  */
 package com.github.jk1.license.render
 
-import com.github.jk1.license.GradleProject
 import com.github.jk1.license.ImportedModuleBundle
 import com.github.jk1.license.LicenseReportExtension
 import com.github.jk1.license.ModuleData
@@ -24,14 +23,13 @@ import groovy.json.JsonBuilder
 import org.gradle.api.Project
 import org.gradle.api.tasks.Input
 
-import static com.github.jk1.license.render.LicenseDataCollector.singleModuleLicenseInfo
 import static com.github.jk1.license.render.LicenseDataCollector.multiModuleLicenseInfo
+import static com.github.jk1.license.render.LicenseDataCollector.singleModuleLicenseInfo
 
 /**
  *
- * This renderer has two modes:  single-license-per-module  and  all-licenses-per-module.
- * The mode can be controlled with the constructor parameter  onlyOneLicensePerModule   and depending on
- * the mode, the result looks differently:
+ * This renderer is based on [JsonReportRenderer] but has an added functionality
+ * of including the embedded license and notice texts in the resulting JSON report, if it's available:
  *
  * single-license-per-module
  * =========================
@@ -45,6 +43,7 @@ import static com.github.jk1.license.render.LicenseDataCollector.multiModuleLice
  *      "moduleVersion": "...",
  *      "moduleLicense": "...",
  *      "moduleLicenseUrl": "...",
+ *      "embeddedLicenses": [ "..." ]
  *   }, ...],
  *  "importedModules": [
  *   {
@@ -74,7 +73,8 @@ import static com.github.jk1.license.render.LicenseDataCollector.multiModuleLice
  *          {
  *              "moduleLicense": "...",
  *              "moduleLicenseUrl": "..."
- *          }, ... ]
+ *          }, ... ],
+ *      "embeddedLicenses": [ "..." ]
  *   }, ...],
  *  "importedModules": [
  *   {
@@ -91,7 +91,7 @@ import static com.github.jk1.license.render.LicenseDataCollector.multiModuleLice
  *
  */
 
-class JsonReportRenderer implements ReportRenderer {
+class ExtendedJsonReportRenderer implements ReportRenderer {
 
     private String fileName
     private Project project
@@ -99,7 +99,7 @@ class JsonReportRenderer implements ReportRenderer {
     private File output
     private Boolean onlyOneLicensePerModule
 
-    JsonReportRenderer(String fileName = 'index.json', boolean onlyOneLicensePerModule = true) {
+    ExtendedJsonReportRenderer(String fileName = 'index.json', boolean onlyOneLicensePerModule = true) {
         this.fileName = fileName
         this.onlyOneLicensePerModule = onlyOneLicensePerModule
     }
@@ -132,11 +132,17 @@ class JsonReportRenderer implements ReportRenderer {
             String moduleName = "${it.group}:${it.name}"
             String moduleVersion = it.version
             def (String moduleUrl, String moduleLicense, String moduleLicenseUrl) = singleModuleLicenseInfo(it)
+            def embeddedLicensesList = it.licenseFiles.collectMany({ licenseFile ->
+                    licenseFile.fileDetails.file.collect({ new File("$config.absoluteOutputDir/$it").text })
+                })
+
+            println(embeddedLicensesList)
             trimAndRemoveNullEntries([moduleName      : moduleName,
                                       moduleUrl       : moduleUrl,
                                       moduleVersion   : moduleVersion,
                                       moduleLicense   : moduleLicense,
-                                      moduleLicenseUrl: moduleLicenseUrl])
+                                      moduleLicenseUrl: moduleLicenseUrl,
+                                      embeddedLicenses: embeddedLicensesList])
         }.sort { it.moduleName }
     }
 
@@ -150,10 +156,15 @@ class JsonReportRenderer implements ReportRenderer {
                 [moduleLicense: it.name, moduleLicenseUrl: it.url]
             }
 
+            def embeddedLicensesList = it.licenseFiles.collectMany({ licenseFile ->
+                    licenseFile.fileDetails.collect({ new File("$config.absoluteOutputDir/$it.file").text })
+                })
+
             trimAndRemoveNullEntries([moduleName    : moduleName,
                                       moduleVersion : moduleVersion,
                                       moduleUrls    : info.moduleUrls,
-                                      moduleLicenses: jsonLicenseList])
+                                      moduleLicenses: jsonLicenseList,
+                                      embeddedLicenses: embeddedLicensesList])
         }.sort { it.moduleName }
     }
 

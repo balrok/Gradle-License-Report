@@ -58,6 +58,7 @@ class ConfigurationData {
 @Canonical
 class ModuleData {
     String group, name, version
+    boolean hasArtifactFile
     Set<ManifestData> manifests = new TreeSet<ManifestData>()
     Set<LicenseFileData> licenseFiles = new TreeSet<LicenseFileData>()
     Set<PomData> poms = new TreeSet<PomData>()
